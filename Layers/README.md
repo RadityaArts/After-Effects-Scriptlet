@@ -4,7 +4,7 @@ Scripts for controlling and enhancing layer behavior in After Effects.
 
 ## Scripts
 
-### [Center Layer](Center%20Layer/)
+### [Center Layer](Center%20Layer.jsx)
 Centers the anchor point and positions selected layers at the center of the composition.
 
 **Usage:** Select one or more layers and run the script.
@@ -17,7 +17,7 @@ Centers the anchor point and positions selected layers at the center of the comp
 
 ---
 
-### [Fit to Comp Height](Fit%20to%20Comp%20Height/)
+### [Fit to Comp Height](Fit%20to%20Comp%20Height.jsx)
 Automatically scales selected layers to fit the composition height while maintaining aspect ratio.
 
 **Usage:** Select one or more layers and run the script.
@@ -31,7 +31,7 @@ Automatically scales selected layers to fit the composition height while maintai
 
 ---
 
-### [Fit to Comp Width](Fit%20to%20Comp%20Width/)
+### [Fit to Comp Width](Fit%20to%20Comp%20Width.jsx)
 Automatically scales selected layers to fit the composition width while maintaining aspect ratio.
 
 **Usage:** Select one or more layers and run the script.
