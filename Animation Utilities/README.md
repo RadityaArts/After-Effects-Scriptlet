@@ -4,7 +4,7 @@ Utility scripts for animation workflow and keyframe management.
 
 ## Scripts
 
-### [Powerful Null](Powerful%20Null/)
+### [Powerful Null](Powerful%20Null.jsx)
 Creates a powerful null object that matches the position and rotation of the selected layer, or matches camera orientation if a camera is selected.
 
 **Usage:** Select a layer or camera and run the script.
@@ -18,7 +18,7 @@ Creates a powerful null object that matches the position and rotation of the sel
 
 ---
 
-### [Set Hold Keyframes](Set%20Hold%20Keyframe/)
+### [Set Hold Keyframes](Set%20Hold%20Keyframe.jsx)
 Converts selected keyframes to hold interpolation for stepped animation effects.
 
 **Usage:** Select properties with keyframes and run the script. Only the selected keyframes will be converted.
@@ -30,7 +30,7 @@ Converts selected keyframes to hold interpolation for stepped animation effects.
 
 ---
 
-### [Set Linear Keyframes](Set%20Linear%20Keyframe/)
+### [Set Linear Keyframes](Set%20Linear%20Keyframe.jsx)
 Converts selected keyframes to linear interpolation for constant-speed animation.
 
 **Usage:** Select properties with keyframes and run the script. Only the selected keyframes will be converted.
