@@ -4,7 +4,7 @@ A collection of useful Adobe After Effects scripts to enhance your workflow and 
 
 ## 📂 Script Categories
 
-### [Animation Utilities](Animation Utilities/)
+### [Animation Utilities](Animation%20Utilities/)
 Utility scripts for animation workflow and keyframe management.
 - Elastic Controller
 - Powerful Null
@@ -12,11 +12,11 @@ Utility scripts for animation workflow and keyframe management.
 - Set Linear Keyframes
 - Wiggle Controller
 
-### [Camera Tools](Camera Tools/)
+### [Camera Tools](Camera%20Tools/)
 Scripts for controlling and enhancing camera behavior in After Effects.
 - Camera Focus Controller
 
-### [Layer Positioning](Layer Positioning/)
+### [Layer Positioning](Layer%20Positioning/)
 Scripts for positioning and scaling layers within compositions.
 - Center Layer
 - Fit to Comp Height
