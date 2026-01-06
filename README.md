@@ -16,6 +16,10 @@ Utility scripts for animation workflow and keyframe management.
 Scripts for controlling and enhancing camera behavior in After Effects.
 - Camera Focus Controller
 
+### [Compositions](Compositions/)
+Scripts for managing, organizing, and enhancing compositions in After Effects.
+- Auto-Fit Precomp
+
 ### [Layer Positioning](Layer%20Positioning/)
 Scripts for positioning and scaling layers within compositions.
 - Center Layer
