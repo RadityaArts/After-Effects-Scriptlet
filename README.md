@@ -20,8 +20,8 @@ Scripts for controlling and enhancing camera behavior in After Effects.
 Scripts for managing, organizing, and enhancing compositions in After Effects.
 - Auto-Fit Precomp
 
-### [Layer Positioning](Layer%20Positioning/)
-Scripts for positioning and scaling layers within compositions.
+### [Layers](Layers/)
+Scripts for controlling and enhancing layer behavior in After Effects.
 - Center Layer
 - Fit to Comp Height
 - Fit to Comp Width
