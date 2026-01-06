@@ -24,8 +24,12 @@
      */
     function createWiggleExpression(propertyName, controlLayerName) {
         return 'var fx = thisComp.layer("' + controlLayerName + '").effect("Wiggle - ' + propertyName + '");\n' +
-               'seedRandom(fx("Random Seed"));\n' +
-               'wiggle(fx("Frequency"), fx("Amplitude"), fx("Octaves"), fx("Intensity"));';
+               'if (fx.enabled) {\n' +
+               '    seedRandom(fx("Random Seed"));\n' +
+               '    wiggle(fx("Frequency"), fx("Amplitude"), fx("Octaves"), fx("Intensity"));\n' +
+               '} else {\n' +
+               '    value;\n' +
+               '}';
     }
 
     /**
@@ -354,4 +358,5 @@
     } finally {
         app.endUndoGroup();
     }
+
 })();
