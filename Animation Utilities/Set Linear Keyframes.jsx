@@ -28,10 +28,14 @@ function setLinear() {
     var properties = comp.selectedLayers[i].selectedProperties;
     
     for (var j = 0; j < properties.length; j++) {
-      var keys = properties[j].selectedKeys;
+      var prop = properties[j];
       
-      for (var k = 0; k < keys.length; k++) {
-        properties[j].setInterpolationTypeAtKey(keys[k], KeyframeInterpolationType.LINEAR);
+      if (prop.canVaryOverTime && prop.numKeys > 0) {
+        var keys = prop.selectedKeys;
+        
+        for (var k = 0; k < keys.length; k++) {
+          prop.setInterpolationTypeAtKey(keys[k], KeyframeInterpolationType.LINEAR);
+        }
       }
     }
   }
