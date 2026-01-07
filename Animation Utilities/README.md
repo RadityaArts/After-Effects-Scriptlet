@@ -4,7 +4,7 @@ Utility scripts for animation workflow and keyframe management.
 
 ## Scripts
 
-### [Elastic Controller](Elastic%20Controller/)
+### [Elastic Controller](Elastic%20Controller.jsx/)
 Adds or removes an elastic controller on selected properties, wiring expressions to an auto-applied effect preset for per-property control.
 
 **Usage:** 
@@ -57,7 +57,7 @@ Converts selected keyframes to linear interpolation for constant-speed animation
 ---
 
 
-### [Wiggle Controller](Wiggle%20Controller/)
+### [Wiggle Controller](Wiggle%20Controller.jsx/)
 Adds or removes a wiggle controller on selected properties (or a camera’s Point of Interest), wiring expressions to an auto-applied effect preset for per-property control.
 
 **Usage:** 
