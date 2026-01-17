@@ -1,10 +1,15 @@
 /**
  * @name Powerful_Null
- * @version 2.0
+ * @version 2.1
  * ================================
- * Creates a control null object for the selected layer
+ * Creates a control null object for the selected layer(s)
  * 
- * Usage: Select layer(s) and run the script
+ * Features:
+ * - Single layer: Creates null at layer position and parents it
+ * - Multiple layers: Creates null at center of bounding box of all layers
+ * - Supports masked layers (uses mask bounds)
+ * - Supports 3D layers
+ * - Accounts for rotation, scale, and anchor point transforms
  * 
  * @author ©RadityaArts
  */
@@ -15,6 +20,256 @@
     // ============================================================================
     // HELPER FUNCTIONS
     // ============================================================================
+    
+    /**
+     * Transform a point from layer space to composition space
+     */
+    function transformPoint(point, position, anchorPoint, scale, rotationZ) {
+        // Translate by anchor point
+        var x = point[0] - anchorPoint[0];
+        var y = point[1] - anchorPoint[1];
+        
+        // Apply scale
+        x = x * scale[0] / 100;
+        y = y * scale[1] / 100;
+        
+        // Apply rotation (Z rotation in 2D)
+        var angle = rotationZ * Math.PI / 180;
+        var cos = Math.cos(angle);
+        var sin = Math.sin(angle);
+        var rotX = x * cos - y * sin;
+        var rotY = x * sin + y * cos;
+        
+        // Translate to position
+        return [position[0] + rotX, position[1] + rotY];
+    }
+    
+    /**
+     * Calculate bounds of mask vertices (simple approach for mask bounds)
+     */
+    function getMaskBounds(maskPath) {
+        if (!maskPath.vertices || maskPath.vertices.length === 0) {
+            return null;
+        }
+        
+        var vertices = maskPath.vertices;
+        var minX = vertices[0][0];
+        var maxX = vertices[0][0];
+        var minY = vertices[0][1];
+        var maxY = vertices[0][1];
+        
+        for (var i = 1; i < vertices.length; i++) {
+            if (vertices[i][0] < minX) minX = vertices[i][0];
+            if (vertices[i][0] > maxX) maxX = vertices[i][0];
+            if (vertices[i][1] < minY) minY = vertices[i][1];
+            if (vertices[i][1] > maxY) maxY = vertices[i][1];
+        }
+        
+        return {
+            left: minX,
+            right: maxX,
+            top: minY,
+            bottom: maxY
+        };
+    }
+    
+    /**
+     * Get the visual bounding box of a layer, accounting for all transformations
+     */
+    function getLayerBoundsWithMasks(layer, time) {
+        var sourceRect = layer.sourceRectAtTime(time, false);
+        
+        var layerLeft = sourceRect.left;
+        var layerTop = sourceRect.top;
+        var layerRight = sourceRect.left + sourceRect.width;
+        var layerBottom = sourceRect.top + sourceRect.height;
+        
+        // Check for masks and use mask bounds instead of source bounds
+        if (layer.property("ADBE Mask Parade") && layer.property("ADBE Mask Parade").numProperties > 0) {
+            var masks = layer.property("ADBE Mask Parade");
+            var hasMask = false;
+            var combinedLeft = Infinity;
+            var combinedRight = -Infinity;
+            var combinedTop = Infinity;
+            var combinedBottom = -Infinity;
+            
+            for (var m = 1; m <= masks.numProperties; m++) {
+                var mask = masks.property(m);
+                if (mask.property("ADBE Mask Shape").enabled) {
+                    var maskPath = mask.property("ADBE Mask Shape").valueAtTime(time, false);
+                    var maskBounds = getMaskBounds(maskPath);
+                    
+                    if (maskBounds) {
+                        hasMask = true;
+                        combinedLeft = Math.min(combinedLeft, maskBounds.left);
+                        combinedRight = Math.max(combinedRight, maskBounds.right);
+                        combinedTop = Math.min(combinedTop, maskBounds.top);
+                        combinedBottom = Math.max(combinedBottom, maskBounds.bottom);
+                    }
+                }
+            }
+            
+            // Use mask bounds if we found any
+            if (hasMask) {
+                layerLeft = combinedLeft;
+                layerRight = combinedRight;
+                layerTop = combinedTop;
+                layerBottom = combinedBottom;
+            }
+        }
+        
+        return {
+            layerLeft: layerLeft,
+            layerTop: layerTop,
+            layerRight: layerRight,
+            layerBottom: layerBottom
+        };
+    }
+    
+    /**
+     * Get the visual bounding box of a layer in composition space
+     * Returns { left, right, top, bottom, front, back } for 3D support
+     */
+    function getLayerBounds(layer, comp) {
+        var time = comp.time;
+        
+        // Get transform properties
+        var position = layer.property("Position").valueAtTime(time, false);
+        var anchorPoint = layer.property("Anchor Point").valueAtTime(time, false);
+        var scale = layer.property("Scale").valueAtTime(time, false);
+        var rotationZ = layer.property("Z Rotation").valueAtTime(time, false);
+        
+        // Get layer bounds (accounting for masks)
+        var layerBounds = getLayerBoundsWithMasks(layer, time);
+        var layerLeft = layerBounds.layerLeft;
+        var layerTop = layerBounds.layerTop;
+        var layerRight = layerBounds.layerRight;
+        var layerBottom = layerBounds.layerBottom;
+        
+        // Transform all four corners from layer space to composition space
+        var topLeft = transformPoint([layerLeft, layerTop], position, anchorPoint, scale, rotationZ);
+        var topRight = transformPoint([layerRight, layerTop], position, anchorPoint, scale, rotationZ);
+        var bottomLeft = transformPoint([layerLeft, layerBottom], position, anchorPoint, scale, rotationZ);
+        var bottomRight = transformPoint([layerRight, layerBottom], position, anchorPoint, scale, rotationZ);
+        
+        // Find bounding box of transformed corners
+        var compLeft = Math.min(topLeft[0], topRight[0], bottomLeft[0], bottomRight[0]);
+        var compRight = Math.max(topLeft[0], topRight[0], bottomLeft[0], bottomRight[0]);
+        var compTop = Math.min(topLeft[1], topRight[1], bottomLeft[1], bottomRight[1]);
+        var compBottom = Math.max(topLeft[1], topRight[1], bottomLeft[1], bottomRight[1]);
+        
+        var bounds = {
+            left: compLeft,
+            right: compRight,
+            top: compTop,
+            bottom: compBottom,
+            front: 0,
+            back: 0
+        };
+        
+        // Handle 3D layers
+        if (layer.threeDLayer) {
+            var posZ = position.length > 2 ? position[2] : 0;
+            bounds.front = posZ;
+            bounds.back = posZ;
+        }
+        
+        return bounds;
+    }
+    
+    /**
+     * Calculate the combined bounding box of multiple layers
+     */
+    function getCombinedBounds(layers, comp) {
+        if (layers.length === 0) return null;
+        
+        var firstBounds = getLayerBounds(layers[0], comp);
+        var combined = {
+            left: firstBounds.left,
+            right: firstBounds.right,
+            top: firstBounds.top,
+            bottom: firstBounds.bottom,
+            front: firstBounds.front,
+            back: firstBounds.back
+        };
+        
+        // Expand bounds to include all layers
+        for (var i = 1; i < layers.length; i++) {
+            var bounds = getLayerBounds(layers[i], comp);
+            
+            combined.left = Math.min(combined.left, bounds.left);
+            combined.right = Math.max(combined.right, bounds.right);
+            combined.top = Math.min(combined.top, bounds.top);
+            combined.bottom = Math.max(combined.bottom, bounds.bottom);
+            combined.front = Math.min(combined.front, bounds.front);
+            combined.back = Math.max(combined.back, bounds.back);
+        }
+        
+        return combined;
+    }
+    
+    /**
+     * Check if any of the selected layers is a 3D layer
+     */
+    function hasAny3DLayer(layers) {
+        for (var i = 0; i < layers.length; i++) {
+            if (layers[i].threeDLayer) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    /**
+     * Create null at center of bounding box for multiple layers
+     */
+    function createBoundingBoxNull(layers, comp) {
+        var bounds = getCombinedBounds(layers, comp);
+        
+        if (!bounds) {
+            alert("Could not calculate bounding box.");
+            return null;
+        }
+        
+        // Calculate center position
+        var centerX = (bounds.left + bounds.right) / 2;
+        var centerY = (bounds.top + bounds.bottom) / 2;
+        var centerZ = (bounds.front + bounds.back) / 2;
+        
+        // Create null layer
+        var nullLayer = comp.layers.addNull();
+        nullLayer.name = "NULL CONTROL";
+        nullLayer.property("Anchor Point").setValue([50, 50, 0]);
+        
+        // Check if we need 3D
+        var is3D = hasAny3DLayer(layers);
+        nullLayer.threeDLayer = is3D;
+        
+        // Set position at center of bounding box
+        if (is3D) {
+            nullLayer.property("Position").setValue([centerX, centerY, centerZ]);
+        } else {
+            nullLayer.property("Position").setValue([centerX, centerY]);
+        }
+        
+        // Find the topmost selected layer (lowest index = highest in stack)
+        var topmostLayer = layers[0];
+        for (var i = 1; i < layers.length; i++) {
+            if (layers[i].index < topmostLayer.index) {
+                topmostLayer = layers[i];
+            }
+        }
+        
+        // Move null just above the topmost selected layer
+        nullLayer.moveBefore(topmostLayer);
+        
+        // Parent all selected layers to the null
+        for (var j = 0; j < layers.length; j++) {
+            layers[j].parent = nullLayer;
+        }
+        
+        return nullLayer;
+    }
     
     /**
      * Get property value at last keyframe or current value
@@ -153,7 +408,7 @@
     // MAIN EXECUTION
     // ============================================================================
     
-    app.beginUndoGroup("Add Powerful Camera Null");
+    app.beginUndoGroup("Add Powerful Null Control");
     
     try {
         var activeComp = app.project.activeItem;
@@ -168,8 +423,17 @@
             return;
         }
         
-        var selectedLayer = activeComp.selectedLayers[0];
-        createNullControl(selectedLayer);
+        var selectedLayers = activeComp.selectedLayers;
+        
+        // Check if multiple layers are selected
+        if (selectedLayers.length > 1) {
+            // Create null at center of bounding box for multiple layers
+            createBoundingBoxNull(selectedLayers, activeComp);
+        } else {
+            // Single layer - use original behavior
+            var selectedLayer = selectedLayers[0];
+            createNullControl(selectedLayer);
+        }
         
     } catch (error) {
         alert("Error: " + error.toString());
