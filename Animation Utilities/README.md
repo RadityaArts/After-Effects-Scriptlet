@@ -27,7 +27,8 @@ Creates a powerful null object that matches the position and rotation of the sel
 - Matches position, rotation, and orientation
 - Automatically enables 3D for null object
 - Captures keyframe values at last keyframe time
-- Special handling for camera Point of Interest
+- Support Masked Layers
+- Support multiple layer selection to create a null object at the center of the bounding box of all selected layers.
 
 ---
 
