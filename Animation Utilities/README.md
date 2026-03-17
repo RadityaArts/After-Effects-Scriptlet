@@ -55,19 +55,3 @@ Converts selected keyframes to linear interpolation for constant-speed animation
 - Supports all property types that allow interpolation
 
 
----
-
-
-### [Wiggle Controller](Wiggle%20Controller.jsx/)
-Adds or removes a wiggle controller on selected properties (or a camera’s Point of Interest), wiring expressions to an auto-applied effect preset for per-property control.
-
-**Usage:** 
-- Add: select one or more properties (or a camera layer) and run the script.
-- Remove: select wiggle-driven properties/effects or layers that already have wiggles, then run the script.
-
-**Features:**
-- Per-property controls: Frequency, Amplitude, Octaves, Intensity, Seed
-- Loopable wiggle toggle
-- Auto-creates a “WIGGLE” null when the target layer can’t host effects
-- Safely detects and removes linked wiggle effects/expressions
-- Preset auto-installed
